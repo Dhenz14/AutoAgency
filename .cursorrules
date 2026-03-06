@@ -1,0 +1,140 @@
+# AutoAgency — Cursor Rules
+
+## Project Overview
+AutoAgency is a full-stack AI SaaS dashboard for autonomous social media management. Users manage 100+ social accounts, drop in content (URL/text) and Claude AI generates short-form posts, reply angles, and long-form articles distributed across their account fleet.
+
+## Tech Stack
+- Frontend: React 18 + TypeScript + Tailwind CSS + ShadCN UI (dark mode)
+- Backend: Express.js + TypeScript
+- Database: PostgreSQL with Drizzle ORM (via @neondatabase/serverless)
+- AI: Anthropic Claude Sonnet 4 (user's own API key, NOT Replit AI Integrations)
+- Routing: wouter (client), Express (server)
+- State Management: TanStack Query (React Query)
+- Charts: Recharts
+- Build: Vite (frontend), esbuild (server)
+
+## Architecture Rules
+
+### Data Flow
+1. Schema defined in `shared/schema.ts` — single source of truth for types
+2. Storage layer in `server/storage.ts` — all DB operations go through `IStorage` interface
+3. Routes in `server/routes.ts` — thin handlers that validate with Zod and delegate to storage
+4. API hooks in `client/src/lib/api.ts` — TanStack Query hooks for all endpoints
+5. Pages in `client/src/pages/` — React components that consume hooks
+
+### When Adding Features
+1. Start with `shared/schema.ts` — define tables, insert schemas, types
+2. Add CRUD methods to `IStorage` interface and `DatabaseStorage` in `server/storage.ts`
+3. Add routes in `server/routes.ts` with Zod validation on all inputs
+4. Add TanStack Query hooks in `client/src/lib/api.ts`
+5. Create page component in `client/src/pages/`
+6. Register route in `client/src/App.tsx`
+7. Add nav item in `client/src/components/layout/AppLayout.tsx`
+8. Run `npm run db:push` to sync schema
+
+### Key Files to Understand
+- `shared/schema.ts` — All Drizzle table definitions, Zod insert schemas, TypeScript types
+- `server/storage.ts` — `IStorage` interface + `DatabaseStorage` implementation
+- `server/routes.ts` — All Express API routes
+- `server/ai.ts` — Claude API integration (3 functions: generateContentFromSource, generateReply, analyzeAccountPerformance)
+- `client/src/lib/api.ts` — All TanStack Query hooks (useAccounts, usePosts, useAgentConfigs, etc.)
+- `client/src/components/layout/AppLayout.tsx` — Sidebar navigation + header
+
+## Code Conventions
+
+### Backend
+- All PATCH routes must validate with `.partial()` Zod schemas from drizzle-zod
+- All route params must check for `isNaN(id)` and return 400
+- Storage methods return `undefined` for not-found; routes return 404 JSON
+- Error responses always use `{ error: "message" }` format
+- AI functions in `server/ai.ts` use `process.env.ANTHROPIC_API_KEY` directly — never use Replit AI Integrations billing
+
+### Frontend
+- Use `wouter` for routing (not react-router)
+- All API calls go through hooks in `client/src/lib/api.ts` — never raw fetch in components
+- Use `useMutation` with `onSuccess` that invalidates related query keys
+- Add `data-testid` to all interactive elements: `{action}-{target}` pattern
+- Add `data-testid` to data display elements: `{type}-{content}-{id}` pattern
+
+### Styling
+- Dark mode only — background `hsl(224, 71%, 4%)`, primary `hsl(210, 100%, 50%)`
+- Use `glass-card` utility class for glassmorphic card components
+- Fonts: Inter (body), Plus Jakarta Sans (headings/display)
+- Status indicators use colored dots with `shadow-[0_0_8px_...]` glow
+- Animations: `animate-in fade-in slide-in-from-bottom-4 duration-500`
+
+### Database
+- Use Drizzle ORM exclusively — no raw SQL in application code
+- Schema changes go in `shared/schema.ts`, then `npm run db:push`
+- Foreign keys use `onDelete: "cascade"` for owned relations, `onDelete: "set null"` for optional refs
+- Array columns use `.array()` method syntax: `text().array()` not `array(text())`
+
+## API Endpoints Reference
+
+### Accounts
+- `GET /api/accounts` — list all
+- `GET /api/accounts/stats` — health statistics
+- `POST /api/accounts` — create
+- `PATCH /api/accounts/:id` — update
+- `DELETE /api/accounts/:id` — delete
+- `POST /api/accounts/:id/analyze` — Claude AI analysis
+
+### Content
+- `GET /api/content-sources` — list all
+- `POST /api/content-sources` — create
+- `POST /api/content-sources/:id/generate` — generate AI content
+
+### Posts
+- `GET /api/posts` — list (optional `?contentSourceId=`)
+- `GET /api/posts/top` — top by impressions (`?limit=`)
+- `GET /api/posts/scheduled` — draft/scheduled/pending queue
+- `PATCH /api/posts/:id` — update status/content
+
+### Reply Operations
+- `GET /api/reply-angles` — list angles
+- `GET /api/reply-opportunities` — list opportunities
+- `POST /api/reply-opportunities` — create
+- `POST /api/reply-opportunities/:id/generate-reply` — generate AI reply
+- `PATCH /api/reply-opportunities/:id` — update status
+
+### Agents
+- `GET /api/agents` — list configs
+- `POST /api/agents` — create
+- `PATCH /api/agents/:id` — update
+
+### System
+- `GET /api/dashboard/stats` — aggregated stats
+- `GET /api/health` — health check
+
+## Environment Variables
+- `DATABASE_URL` — PostgreSQL connection string
+- `ANTHROPIC_API_KEY` — User's Anthropic Claude API key
+
+## Common Tasks
+
+### "Add a new database table"
+1. Define in `shared/schema.ts` with `pgTable`
+2. Create `insertSchema` with `createInsertSchema().omit({ id: true, createdAt: true })`
+3. Export insert type with `z.infer` and select type with `$inferSelect`
+4. Add methods to `IStorage` and `DatabaseStorage`
+5. Run `npm run db:push`
+
+### "Add a new API endpoint"
+1. Add route in `server/routes.ts`
+2. Validate body with Zod schema from `shared/schema.ts`
+3. Use `storage` methods for all DB ops
+4. Return consistent JSON format
+
+### "Add a new page"
+1. Create component in `client/src/pages/`
+2. Import and register in `client/src/App.tsx` Switch
+3. Add nav item in `AppLayout.tsx` navItems array
+4. Use hooks from `client/src/lib/api.ts` for data
+
+### "Make Claude do something new"
+1. Add function in `server/ai.ts`
+2. Use `getClient()` helper (checks for API key)
+3. Model: `claude-sonnet-4-20250514`
+4. Parse JSON responses with fallback handling
+5. Add route in `server/routes.ts` to expose it
+6. Add mutation hook in `client/src/lib/api.ts`

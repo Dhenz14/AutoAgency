@@ -1,0 +1,171 @@
+Build a full-stack AI SaaS web app called "AutoAgency".
+
+Purpose:
+This app is an autonomous AI social media agency that manages all my social media accounts and generates posts, replies, and engagement automatically.
+
+Tech Stack:
+- Next.js frontend
+- Tailwind + ShadCN UI
+- Python FastAPI backend
+- PostgreSQL database
+- Redis queue
+- OpenAI API for AI agents
+- LangGraph for multi-agent orchestration
+
+Core Features:
+
+1. Social Media Connections
+Allow users to connect accounts from:
+- X (Twitter)
+- Instagram
+- Hive
+- Medium
+- Reddit
+- LinkedIn
+
+Use OAuth authentication.
+
+Store API tokens securely.
+
+2. Content Input System
+Create a dashboard where the user can upload or input:
+- Articles
+- Notes
+- Ideas
+- Tweets
+- Links
+- Research
+- PDFs
+
+Store this in a "Content Library".
+
+3. AI Content Engine
+Create an AI pipeline that:
+
+Step 1
+Extract key ideas from content.
+
+Step 2
+Convert them into:
+- Twitter posts
+- Threads
+- Instagram captions
+- Medium articles
+- Hive posts
+
+Step 3
+Optimize tone for each platform.
+
+Step 4
+Generate hashtags and hooks.
+
+Step 5
+Queue posts for scheduling.
+
+4. Post Scheduler
+Create a scheduler with:
+
+- Queue system
+- Post calendar
+- Auto posting to each platform
+
+Allow:
+- Auto posting
+- Manual approval
+
+5. Reply Agent ("Reply Guys")
+Create an AI agent that:
+
+- Monitors X in real time
+- Tracks keywords
+- Finds viral tweets
+- Replies intelligently
+
+Features:
+
+Keyword targeting
+Influencer targeting
+Sentiment detection
+Reply tone control
+
+6. Multi Agent System
+
+Create separate AI agents:
+
+Content Agent
+Generates posts
+
+Reply Agent
+Replies to tweets
+
+Research Agent
+Finds trending topics
+
+Strategy Agent
+Plans daily content
+
+Manager Agent
+Coordinates all other agents
+
+7. Prompt Memory
+
+Create a vector database that stores:
+
+Brand voice
+Past posts
+Successful tweets
+Writing style
+
+Use embeddings to maintain consistent voice.
+
+8. Analytics Dashboard
+
+Track:
+
+Engagement
+Followers
+Replies
+Likes
+Post performance
+
+Show graphs.
+
+9. AI Brand Voice Training
+
+Allow user to upload past tweets/posts.
+
+Train the system to mimic their voice.
+
+10. Admin Controls
+
+Settings for:
+
+posting frequency
+tone
+aggressiveness
+engagement style
+
+UI Requirements:
+
+Dark mode
+Clean SaaS dashboard
+Sidebar navigation
+Analytics charts
+
+Security:
+
+Encrypt API tokens
+Rate limit posting
+Prevent spam behavior
+
+Architecture:
+
+Frontend → Next.js
+Backend → FastAPI
+Queue → Redis
+Agents → LangGraph
+Database → PostgreSQL
+
+Deploy on Replit.
+
+Create a working prototype with mocked social APIs first.
